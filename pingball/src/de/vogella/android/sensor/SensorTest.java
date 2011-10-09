@@ -1,6 +1,7 @@
 package de.vogella.android.sensor;
 
 import android.app.Activity;
+import de.vogella.android.sensor.BallDrawable;
 
 import android.graphics.Color;
 import android.hardware.Sensor;
@@ -15,13 +16,16 @@ import android.widget.Toast;
 
 public class SensorTest extends Activity implements SensorEventListener {
 	private SensorManager sensorManager;
+	private Sensor sensor;
 	private boolean color = false; 
 	private View view;
 	private long lastUpdate;
-
+	private BallDrawable bDrawable;
+	private int SENSOR_TYPE = 0;
 	
 /** Called when the activity is first created. */
 
+	
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		requestWindowFeature(Window.FEATURE_NO_TITLE);
@@ -29,26 +33,29 @@ public class SensorTest extends Activity implements SensorEventListener {
 	            WindowManager.LayoutParams.FLAG_FULLSCREEN);
 	  
 		super.onCreate(savedInstanceState);
-		setContentView(R.layout.main);
-		view = findViewById(R.id.textView);
-		view.setBackgroundColor(Color.GRAY);
-
-		sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
-		sensorManager.registerListener(this,
-				sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-//				sensorManager.getOrientation(R, values)
-				SensorManager.SENSOR_DELAY_NORMAL);
+//		setContentView(R.layout.main);
+//		view = findViewById(R.id.textView);
+//		view.setBackgroundColor(Color.GRAY);
+		
+		bDrawable = new BallDrawable(this);
+		setContentView(bDrawable);
+		
+		sensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+		SENSOR_TYPE = Sensor.TYPE_ACCELEROMETER;
+        sensor = sensorManager.getDefaultSensor(SENSOR_TYPE);
+		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 		lastUpdate = System.currentTimeMillis();
+		
 	}
 
 	public void onSensorChanged(SensorEvent event) {
-		if (event.sensor.getType() == Sensor.TYPE_ORIENTATION) {
+		if (event.sensor.getType() == SENSOR_TYPE) {
 			float[] values = event.values;
 			// Movement
 			float x = values[0];
 			float y = values[1];
 			float z = values[2];
-			String message = "TYPE_ORIENTATION\n" 
+			String message = "TYPE_ACCELEROMETER\n" 
 					+ "z:" + values[0] + "\n"
 					+ "x:" + values[1] + "\n"
 					+ "y:" + values[2];
@@ -88,15 +95,14 @@ public class SensorTest extends Activity implements SensorEventListener {
 		super.onResume();
 		// register this class as a listener for the orientation and
 		// accelerometer sensors
-		sensorManager.registerListener(this,
-				sensorManager.getDefaultSensor(Sensor.TYPE_ORIENTATION),
-				SensorManager.SENSOR_DELAY_NORMAL);
+		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_NORMAL);
 	}
 
 	@Override
 	protected void onPause() {
 		// unregister listener
+		super.onPause();
 		sensorManager.unregisterListener(this);
-		super.onStop();
+		
 	}
 }
